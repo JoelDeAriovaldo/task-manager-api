@@ -3,8 +3,9 @@ const app = express();
 const mysql = require('mysql');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const logger = require('./logger'); // Import the logger
 
-const secretKey = 'your_secret_key'; // Use uma chave secreta forte
+const secretKey = 'your_secret_key';
 
 // Set up the database connection
 const db = mysql.createConnection({
@@ -17,10 +18,10 @@ const db = mysql.createConnection({
 
 db.connect(err => {
     if (err) {
-        console.error('Error connecting to the database:', err);
+        logger.error('Error connecting to the database:', err);
         return;
     }
-    console.log('Database connected!');
+    logger.info('Database connected!');
 });
 
 // Middleware to handle database queries with Promises
@@ -28,6 +29,7 @@ const queryDb = (query, values) => {
     return new Promise((resolve, reject) => {
         db.query(query, values, (err, results) => {
             if (err) {
+                logger.error('Database query error:', err);
                 return reject(err);
             }
             resolve(results);
@@ -39,16 +41,28 @@ const queryDb = (query, values) => {
 const authenticate = (req, res, next) => {
     const token = req.headers['authorization'];
     if (!token) {
+        logger.warn('Token not provided');
         return res.status(401).json({ message: 'Token não fornecido' });
     }
     jwt.verify(token, secretKey, (err, decoded) => {
         if (err) {
+            logger.warn('Invalid token');
             return res.status(401).json({ message: 'Token inválido' });
         }
         req.user = decoded;
         next();
     });
 };
+
+// Global error handling middleware
+app.use((err, req, res, next) => {
+    logger.error(err.message, err);
+    res.status(err.statusCode || 500).json({
+        status: err.status || 'error',
+        message: err.message || 'Internal server error'
+    });
+});
+
 
 // Set up the API routes
 app.use(express.json());
@@ -61,8 +75,9 @@ app.use('/api', authRoutes);
 const taskRoutes = require('./routes/taskRoutes');
 app.use('/api', authenticate, taskRoutes);
 
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
 });

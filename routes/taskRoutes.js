@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const queryDb = require('../db');
+const logger = require('../logger'); // Import the logger
+const { DatabaseError, AuthError } = require('../errors');
+
 
 // Get all tasks
 router.get('/tasks', async (req, res) => {
@@ -8,7 +11,8 @@ router.get('/tasks', async (req, res) => {
         const tasks = await queryDb('SELECT * FROM tasks');
         res.json(tasks);
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' });
+        logger.error('Error fetching tasks:', err);
+        next(new DatabaseError('Internal server error'));
     }
 });
 
@@ -20,6 +24,7 @@ router.post('/tasks', async (req, res) => {
         await queryDb('INSERT INTO tasks SET ?', task);
         res.status(201).json(task);
     } catch (err) {
+        logger.error('Error creating task:', err);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -32,6 +37,7 @@ router.put('/tasks/:id', async (req, res) => {
         await queryDb('UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?', [title, description, status, id]);
         res.json({ message: 'Tarefa atualizada com sucesso' });
     } catch (err) {
+        logger.error('Error updating task:', err);
         res.status(500).json({ message: 'Erro do Servidor Interno' });
     }
 });
@@ -43,6 +49,7 @@ router.delete('/tasks/:id', async (req, res) => {
         await queryDb('DELETE FROM tasks WHERE id = ?', [id]);
         res.json({ message: 'Tarefa excluída com sucesso' });
     } catch (err) {
+        logger.error('Error deleting task:', err);
         res.status(500).json({ message: 'Erro do Servidor Interno' });
     }
 });
