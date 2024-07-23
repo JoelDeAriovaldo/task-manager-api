@@ -1,10 +1,10 @@
-const queryDb = require('../db');
-const logger = require('../logger'); // Import the logger
+const { Task } = require('../models');
 const { DatabaseError } = require('../errors');
+const logger = require('../logger');
 
-exports.getAllTasks = async (req, res, next) => {
+exports.getTasks = async (req, res, next) => {
     try {
-        const tasks = await queryDb('SELECT * FROM tasks');
+        const tasks = await Task.findAll({ where: { userId: req.user.id } });
         res.json(tasks);
     } catch (err) {
         logger.error('Error fetching tasks:', err);
@@ -12,37 +12,45 @@ exports.getAllTasks = async (req, res, next) => {
     }
 };
 
-exports.createTask = async (req, res) => {
+exports.createTask = async (req, res, next) => {
     const { title, description, status } = req.body;
-    const task = { title, description, status };
     try {
-        await queryDb('INSERT INTO tasks SET ?', task);
+        const task = await Task.create({ title, description, status, userId: req.user.id });
         res.status(201).json(task);
     } catch (err) {
         logger.error('Error creating task:', err);
-        res.status(500).json({ message: 'Internal server error' });
+        next(new DatabaseError('Internal server error'));
     }
 };
 
-exports.updateTask = async (req, res) => {
+exports.updateTask = async (req, res, next) => {
     const { id } = req.params;
     const { title, description, status } = req.body;
     try {
-        await queryDb('UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?', [title, description, status, id]);
+        const [updated] = await Task.update(
+            { title, description, status },
+            { where: { id, userId: req.user.id } }
+        );
+        if (!updated) {
+            return res.status(404).json({ message: 'Tarefa não encontrada' });
+        }
         res.json({ message: 'Tarefa atualizada com sucesso' });
     } catch (err) {
         logger.error('Error updating task:', err);
-        res.status(500).json({ message: 'Erro do Servidor Interno' });
+        next(new DatabaseError('Erro do Servidor Interno'));
     }
 };
 
-exports.deleteTask = async (req, res) => {
+exports.deleteTask = async (req, res, next) => {
     const { id } = req.params;
     try {
-        await queryDb('DELETE FROM tasks WHERE id = ?', [id]);
+        const deleted = await Task.destroy({ where: { id, userId: req.user.id } });
+        if (!deleted) {
+            return res.status(404).json({ message: 'Tarefa não encontrada' });
+        }
         res.json({ message: 'Tarefa excluída com sucesso' });
     } catch (err) {
         logger.error('Error deleting task:', err);
-        res.status(500).json({ message: 'Erro do Servidor Interno' });
+        next(new DatabaseError('Erro do Servidor Interno'));
     }
 };
