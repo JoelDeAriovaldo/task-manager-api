@@ -2,6 +2,9 @@ const express = require('express');
 const app = express();
 const mysql = require('mysql');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const secretKey = 'your_secret_key'; // Use uma chave secreta forte
 
 // Set up the database connection
 const db = mysql.createConnection({
@@ -14,10 +17,10 @@ const db = mysql.createConnection({
 
 db.connect(err => {
     if (err) {
-        console.error('Erro se conectando ao banco de dados:', err);
+        console.error('Error connecting to the database:', err);
         return;
     }
-    console.log('Banco de dados conectado!');
+    console.log('Database connected!');
 });
 
 // Middleware to handle database queries with Promises
@@ -32,24 +35,19 @@ const queryDb = (query, values) => {
     });
 };
 
-// Set up the authentication system
-const authenticate = async (req, res, next) => {
-    const { username, password } = req.body;
-    try {
-        const users = await queryDb('SELECT * FROM users WHERE username = ?', [username]);
-        if (users.length === 0) {
-            return res.status(401).json({ message: 'Nome de usuário ou senha inválidos' });
-        }
-        const user = users[0];
-        const isValid = await bcrypt.compare(password, user.password); S
-        if (!isValid) {
-            return res.status(401).json({ message: 'Nome de usuário ou senha inválidos' });
-        }
-        req.user = user;
-        next();
-    } catch (err) {
-        res.status(500).json({ message: 'Erro do Servidor Interno' });
+// Middleware to verify JWT
+const authenticate = (req, res, next) => {
+    const token = req.headers['authorization'];
+    if (!token) {
+        return res.status(401).json({ message: 'Token não fornecido' });
     }
+    jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Token inválido' });
+        }
+        req.user = decoded;
+        next();
+    });
 };
 
 // Set up the API routes
@@ -59,12 +57,12 @@ app.use(express.json());
 const authRoutes = require('./routes/authRoutes');
 app.use('/api', authRoutes);
 
-// Import and use taskRoutes
+// Import and use taskRoutes, ensuring authenticate is called correctly
 const taskRoutes = require('./routes/taskRoutes');
 app.use('/api', authenticate, taskRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor em execução na porta${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
