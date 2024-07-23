@@ -1,35 +1,50 @@
-// routes/taskRoutes.js
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const queryDb = require('../db');
 
 // Get all tasks
 router.get('/tasks', async (req, res) => {
-    const tasks = await db.query('SELECT * FROM tasks');
-    res.json(tasks);
+    try {
+        const tasks = await queryDb('SELECT * FROM tasks');
+        res.json(tasks);
+    } catch (err) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 // Create a new task
 router.post('/tasks', async (req, res) => {
-    const { description } = req.body;
-    const task = { description };
-    await db.query('INSERT INTO tasks SET?', task);
-    res.status(201).json(task);
+    const { title, description, status } = req.body;
+    const task = { title, description, status };
+    try {
+        await queryDb('INSERT INTO tasks SET ?', task);
+        res.status(201).json(task);
+    } catch (err) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 // Update a task
 router.put('/tasks/:id', async (req, res) => {
     const { id } = req.params;
-    const { description } = req.body;
-    await db.query('UPDATE tasks SET description =? WHERE id =?', description, id);
-    res.json({ message: 'Task updated successfully' });
+    const { title, description, status } = req.body;
+    try {
+        await queryDb('UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?', [title, description, status, id]);
+        res.json({ message: 'Task updated successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 // Delete a task
 router.delete('/tasks/:id', async (req, res) => {
     const { id } = req.params;
-    await db.query('DELETE FROM tasks WHERE id =?', id);
-    res.json({ message: 'Task deleted successfully' });
+    try {
+        await queryDb('DELETE FROM tasks WHERE id = ?', [id]);
+        res.json({ message: 'Task deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 module.exports = router;

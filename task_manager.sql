@@ -16,4 +16,10 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+select * from users;
+
+INSERT INTO users (username, password) 
+VALUES ('admin', 'admin1');
+
+
 

@@ -1,4 +1,3 @@
-// db.js
 const mysql = require('mysql');
 
 const db = mysql.createConnection({
@@ -9,15 +8,23 @@ const db = mysql.createConnection({
     port: 3308
 });
 
-db.connect((err) => {
+db.connect(err => {
     if (err) {
-        console.error('Error connecting to database:', err);
-        setTimeout(() => {
-            db.connect(); // Try to reconnect after 5 seconds
-        }, 5000);
+        console.error('Error connecting to the database:', err);
         return;
     }
-    console.log('Connected to database');
+    console.log('Database connected!');
 });
 
-module.exports = db;
+const queryDb = (query, values) => {
+    return new Promise((resolve, reject) => {
+        db.query(query, values, (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve(results);
+        });
+    });
+};
+
+module.exports = queryDb;
