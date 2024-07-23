@@ -10,9 +10,9 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = { username, password: hashedPassword };
         await queryDb('INSERT INTO users SET ?', user);
-        res.json({ message: 'User created successfully' });
+        res.json({ message: 'Usuário criado com sucesso' });
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Erro do Servidor Interno' });
     }
 });
 
@@ -22,16 +22,16 @@ router.post('/login', async (req, res) => {
     try {
         const users = await queryDb('SELECT * FROM users WHERE username = ?', [username]);
         if (users.length === 0) {
-            return res.status(401).json({ message: 'Invalid username or password' });
+            return res.status(401).json({ message: 'nome de usuário ou senha inválidos' });
         }
         const user = users[0];
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
-            return res.status(401).json({ message: 'Invalid username or password' });
+            return res.status(401).json({ message: 'nome de usuário ou senha inválidos' });
         }
-        res.json({ message: 'Logged in successfully' });
+        res.json({ message: 'Conectado com sucesso' });
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Erro do Servidor Interno' });
     }
 });
 

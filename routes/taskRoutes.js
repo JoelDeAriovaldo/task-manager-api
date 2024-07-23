@@ -30,9 +30,9 @@ router.put('/tasks/:id', async (req, res) => {
     const { title, description, status } = req.body;
     try {
         await queryDb('UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?', [title, description, status, id]);
-        res.json({ message: 'Task updated successfully' });
+        res.json({ message: 'Tarefa atualizada com sucesso' });
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Erro do Servidor Interno' });
     }
 });
 
@@ -41,9 +41,9 @@ router.delete('/tasks/:id', async (req, res) => {
     const { id } = req.params;
     try {
         await queryDb('DELETE FROM tasks WHERE id = ?', [id]);
-        res.json({ message: 'Task deleted successfully' });
+        res.json({ message: 'Tarefa excluída com sucesso' });
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Erro do Servidor Interno' });
     }
 });
 

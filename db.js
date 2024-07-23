@@ -10,10 +10,10 @@ const db = mysql.createConnection({
 
 db.connect(err => {
     if (err) {
-        console.error('Error connecting to the database:', err);
+        console.error('Erro se conectando ao banco de dados:', err);
         return;
     }
-    console.log('Database connected!');
+    console.log('Banco de dados conectado!');
 });
 
 const queryDb = (query, values) => {

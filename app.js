@@ -14,10 +14,10 @@ const db = mysql.createConnection({
 
 db.connect(err => {
     if (err) {
-        console.error('Error connecting to the database:', err);
+        console.error('Erro se conectando ao banco de dados:', err);
         return;
     }
-    console.log('Database connected!');
+    console.log('Banco de dados conectado!');
 });
 
 // Middleware to handle database queries with Promises
@@ -38,17 +38,17 @@ const authenticate = async (req, res, next) => {
     try {
         const users = await queryDb('SELECT * FROM users WHERE username = ?', [username]);
         if (users.length === 0) {
-            return res.status(401).json({ message: 'Invalid username or password' });
+            return res.status(401).json({ message: 'Nome de usuário ou senha inválidos' });
         }
         const user = users[0];
-        const isValid = await bcrypt.compare(password, user.password);
+        const isValid = await bcrypt.compare(password, user.password); S
         if (!isValid) {
-            return res.status(401).json({ message: 'Invalid username or password' });
+            return res.status(401).json({ message: 'Nome de usuário ou senha inválidos' });
         }
         req.user = user;
         next();
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Erro do Servidor Interno' });
     }
 };
 
