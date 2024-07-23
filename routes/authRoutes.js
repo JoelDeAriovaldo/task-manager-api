@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const queryDb = require('../db'); // Certifique-se de que a função queryDb esteja exportada em um arquivo separado
+const queryDb = require('../db');
 
 // Register a new user
 router.post('/register', async (req, res) => {
