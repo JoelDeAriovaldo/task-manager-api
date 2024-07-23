@@ -4,6 +4,7 @@ const mysql = require('mysql');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const logger = require('./logger'); // Import the logger
+const { AppError } = require('./errors');
 
 const secretKey = 'your_secret_key';
 
@@ -54,16 +55,6 @@ const authenticate = (req, res, next) => {
     });
 };
 
-// Global error handling middleware
-app.use((err, req, res, next) => {
-    logger.error(err.message, err);
-    res.status(err.statusCode || 500).json({
-        status: err.status || 'error',
-        message: err.message || 'Internal server error'
-    });
-});
-
-
 // Set up the API routes
 app.use(express.json());
 
@@ -75,6 +66,21 @@ app.use('/api', authRoutes);
 const taskRoutes = require('./routes/taskRoutes');
 app.use('/api', authenticate, taskRoutes);
 
+// Global error handling middleware
+app.use((err, req, res, next) => {
+    if (err instanceof AppError) {
+        logger.error(err.message, err);
+        return res.status(err.statusCode).json({
+            status: err.status,
+            message: err.message
+        });
+    }
+    logger.error('Unexpected error:', err);
+    res.status(500).json({
+        status: 'error',
+        message: 'Internal server error'
+    });
+});
 
 // Start the server
 const PORT = process.env.PORT || 3000;
