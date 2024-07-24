@@ -13,6 +13,7 @@ Antes de começar, certifique-se de ter o [Node.js](https://nodejs.org/) instala
 Para instalar as dependências necessárias e configurar o projeto localmente, siga os passos abaixo:
 
 1. Clone o repositório:
+   https://github.com/JoelDeAriovaldo/task-manager-api
 2. Crie um arquivo `.env` na raiz do projeto e configure suas variáveis de ambiente conforme necessário.
 3. Instale as dependências:
    npm install
