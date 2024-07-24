@@ -65,7 +65,7 @@ exports.refreshToken = async (req, res, next) => {
         const accessToken = generateAccessToken(user);
         res.json({ accessToken });
     } catch (err) {
-        logger.error('Error refreshing token:', err);
+        logger.error('Erro ao atualizar o token:', err);
         next(new DatabaseError('Erro do Servidor Interno'));
     }
 };

@@ -36,12 +36,12 @@ app.use((err, req, res, next) => {
     logger.error(err.message, err);
     res.status(err.statusCode || 500).json({
         status: err.status || 'error',
-        message: err.message || 'Internal server error'
+        message: err.message || 'Erro do Servidor Interno'
     });
 });
 
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    logger.info(`Server running on port ${PORT}`);
+    logger.info(`Servidor em execução na porta ${PORT}`);
 });
