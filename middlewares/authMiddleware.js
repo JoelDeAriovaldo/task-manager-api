@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const { AuthError } = require('../errors');
 const logger = require('../logger');
 
-exports.authenticate = (req, res, next) => {
+module.exports = (req, res, next) => {
     const token = req.headers['authorization'];
     if (!token) {
         logger.warn('Token not provided');

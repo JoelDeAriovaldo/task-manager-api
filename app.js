@@ -4,6 +4,7 @@ const app = express();
 const logger = require('./logger');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
+//const authenticate = require('./middlewares/authMiddleware');
 
 // Rate limiting
 const limiter = rateLimit({
@@ -25,10 +26,10 @@ app.use(express.json());
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
-app.use('/api', authRoutes);
+app.use('/api/auth', authRoutes);
 
 const taskRoutes = require('./routes/taskRoutes');
-app.use('/api', authenticate, taskRoutes);
+app.use('/api/tasks', authenticate, taskRoutes);
 
 // Global error handling middleware
 app.use((err, req, res, next) => {
