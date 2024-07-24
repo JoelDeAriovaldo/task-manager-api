@@ -1,20 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
-const sequelize = require('./config/database');
 const logger = require('./logger');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
-const authRoutes = require('./routes/authRoutes');
-const taskRoutes = require('./routes/taskRoutes');
-const { authenticate } = require('./middlewares/authMiddleware');
 
-// Database synchronization
-sequelize.sync()
-    .then(() => logger.info('Database synchronized'))
-    .catch(err => logger.error('Database synchronization error:', err));
-
-// Rate limiting middleware
+// Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100 // limit each IP to 100 requests per windowMs
@@ -24,9 +15,19 @@ app.use(limiter);
 // CORS configuration
 app.use(cors());
 
+// Database and ORM setup
+const { sequelize } = require('./models');
+sequelize.sync();
+
+// Middlewares
+const authenticate = require('./middlewares/authMiddleware');
 app.use(express.json());
 
+// Routes
+const authRoutes = require('./routes/authRoutes');
 app.use('/api', authRoutes);
+
+const taskRoutes = require('./routes/taskRoutes');
 app.use('/api', authenticate, taskRoutes);
 
 // Global error handling middleware
@@ -38,6 +39,7 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     logger.info(`Server running on port ${PORT}`);
